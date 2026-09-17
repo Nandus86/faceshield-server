@@ -68,7 +68,7 @@ class FaceOutcome:
     face_b64: Optional[str] = None
 
 
-@dataclass
+@dataclass(eq=False)
 class PendingSighting:
     """An unknown face awaiting confirmation before registration."""
     embedding: np.ndarray
@@ -301,7 +301,7 @@ class RecognitionService:
                 )
 
             # Confirmed stranger: register exactly once.
-            self._pending.remove(entry)
+            self._pending = [p for p in self._pending if p is not entry]
             best_image = entry.best_face_image if entry.best_face_image is not None else face.face_image
             return await self._register_person(best_image, entry.embedding, source)
 
