@@ -40,6 +40,8 @@ Thumbs.db
 # Project specific
 data/faces/*.jpg
 data/faces/*.png
+data/frames/*.jpg
+data/frames/*.png
 data/encodings/*.pkl
 data/encodings/*.json
 data/sessions/*.json
@@ -48,6 +50,7 @@ data/logs/*.txt
 
 # Keep directory structure
 !data/faces/.gitkeep
+!data/frames/.gitkeep
 !data/encodings/.gitkeep
 !data/sessions/.gitkeep
 !data/analytics/.gitkeep

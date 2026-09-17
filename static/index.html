@@ -659,12 +659,12 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="setting-threshold">Limite de Distância Cosseno (Threshold)</label>
+              <label class="form-label" for="setting-threshold">Limite de Distância Cosseno (Rigor de Reconhecimento)</label>
               <div class="range-wrapper">
-                <input type="range" id="setting-threshold" min="0.2" max="0.75" step="0.01" value="0.45" oninput="document.getElementById('threshold-val').innerText = this.value">
-                <span class="range-value" id="threshold-val">0.45</span>
+                <input type="range" id="setting-threshold" min="0.15" max="0.50" step="0.01" value="0.30" oninput="updateThresholdLabel(this.value)">
+                <span class="range-value" id="threshold-val">0.30 (~70% mín.)</span>
               </div>
-              <span class="form-hint">Recomendado: 0.42 a 0.48 (~55% similaridade). Valores menores evitam falsos positivos ao cobrir a boca ou parte do rosto.</span>
+              <span class="form-hint">Recomendado: 0.28 a 0.32 (~68% a 72% de similaridade mínima). Valores menores são mais rigorosos e eliminam falsos positivos.</span>
             </div>
 
             <div class="form-group">

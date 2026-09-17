@@ -28,10 +28,10 @@ class Settings(BaseSettings):
 
     # ── Face recognition (InsightFace ArcFace 512-d) ─────────
     FACE_MODEL: str = "buffalo_l"
-    DET_SIZE: int = 320                # Detection input size (320 fastest CPU / 640 balanced / 1280 more accurate)
-    SIMILARITY_THRESHOLD: float = 0.45 # Cosine distance threshold (lower = stricter; 0.45 = ~55% similarity)
-    MIN_FACE_SIZE: int = 40            # Minimum face width/height in pixels
-    MIN_DET_SCORE: float = 0.40        # Minimum detection confidence (0-1)
+    DET_SIZE: int = 640                # Detection input size (640 balanced / 1280 more accurate)
+    SIMILARITY_THRESHOLD: float = 0.30 # Cosine distance threshold (0.30 = ~70% min similarity)
+    MIN_FACE_SIZE: int = 50            # Minimum face width/height in pixels
+    MIN_DET_SCORE: float = 0.50        # Minimum detection confidence (0-1)
     COOLDOWN_MINUTES: int = 60         # Minutes between re-logging the same person
     MIN_SIGHTINGS: int = 2             # Sightings required before auto-registering a stranger
     SIGHTING_TTL_MINUTES: int = 10     # How long pending sightings of unknowns are kept

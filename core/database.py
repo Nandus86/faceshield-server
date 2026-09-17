@@ -159,7 +159,7 @@ async def init_db() -> bool:
                 auto_register_enabled=True,
             ))
             logger.info("Configurações padrão inseridas no banco.")
-        elif st.similarity_threshold >= 0.60:
+        elif st.similarity_threshold >= 0.40:
             st.similarity_threshold = cfg.SIMILARITY_THRESHOLD
             logger.info("Limiar de similaridade atualizado para %s (calibração contra falsos positivos).",
                         cfg.SIMILARITY_THRESHOLD)

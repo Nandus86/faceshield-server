@@ -149,7 +149,7 @@ class AppSettings(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
     cooldown_minutes: Mapped[int] = mapped_column(Integer, default=60)
-    similarity_threshold: Mapped[float] = mapped_column(Float, default=0.45)
+    similarity_threshold: Mapped[float] = mapped_column(Float, default=0.30)
     image_retention_hours: Mapped[int] = mapped_column(Integer, default=48)
     rtsp_frame_interval: Mapped[float] = mapped_column(Float, default=2.0)
     min_sightings: Mapped[int] = mapped_column(Integer, default=2)

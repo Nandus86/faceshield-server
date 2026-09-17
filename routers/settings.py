@@ -33,7 +33,7 @@ async def _ensure_settings(session: AsyncSession) -> AppSettings:
         session.add(st)
         await session.commit()
         await session.refresh(st)
-    elif st.similarity_threshold >= 0.60:
+    elif st.similarity_threshold >= 0.40:
         st.similarity_threshold = cfg.SIMILARITY_THRESHOLD
         await session.commit()
         await session.refresh(st)

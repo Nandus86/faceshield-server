@@ -51,7 +51,7 @@ def _now() -> datetime.datetime:
 class RuntimeConfig:
     """Snapshot of runtime settings read once per processing batch."""
     cooldown_minutes: int = 60
-    similarity_threshold: float = 0.45
+    similarity_threshold: float = 0.30
     min_sightings: int = 2
     auto_register_enabled: bool = True
 
@@ -168,8 +168,8 @@ class RecognitionService:
                 )
 
                 # Occluded/covered faces require tighter distance and margin to avoid false positive matches
-                match_thresh = min(rt.similarity_threshold, 0.32) if is_occluded else rt.similarity_threshold
-                match_margin = 0.06 if is_occluded else 0.04
+                match_thresh = min(rt.similarity_threshold - 0.04, 0.26) if is_occluded else rt.similarity_threshold
+                match_margin = 0.06 if is_occluded else 0.05
 
                 person_id, distance = self._cache.match(face.embedding, match_thresh, min_margin=match_margin)
 

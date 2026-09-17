@@ -896,6 +896,13 @@ function filterLogsTable() {
 
 // ─── Settings ─────────────────────────────────────────────────
 
+function updateThresholdLabel(val) {
+    const v = parseFloat(val);
+    const simPct = Math.round((1.0 - v) * 100);
+    const el = document.getElementById('threshold-val');
+    if (el) el.innerText = `${v.toFixed(2)} (~${simPct}% mín.)`;
+}
+
 async function loadRuntimeSettings() {
     try {
         const res = await fetch('/api/v1/settings');
@@ -903,7 +910,7 @@ async function loadRuntimeSettings() {
         const data = await res.json();
 
         document.getElementById('setting-threshold').value = data.similarity_threshold;
-        document.getElementById('threshold-val').innerText = data.similarity_threshold;
+        updateThresholdLabel(data.similarity_threshold);
         document.getElementById('setting-cooldown').value = data.cooldown_minutes;
         document.getElementById('setting-retention').value = data.image_retention_hours;
         document.getElementById('setting-min-sightings').value = data.min_sightings;
