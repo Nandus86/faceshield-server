@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionAI FaceShield — Reconhecimento Facial Automático</title>
+  
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <i data-lucide="shield-check"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">FaceShield <span class="brand-subtag">AI</span></span>
+          <span class="brand-subtitle">Reconhecimento & IA</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="live">
+          <i data-lucide="video"></i>
+          <span>Ao Vivo</span>
+          <span class="live-pill">LIVE</span>
+        </button>
+        <button class="nav-item" data-tab="youtube">
+          <i data-lucide="youtube"></i>
+          <span>YouTube & Vídeos</span>
+          <span class="badge-feature">NOVO</span>
+        </button>
+        <button class="nav-item" data-tab="rtsp">
+          <i data-lucide="cctv"></i>
+          <span>Câmeras RTSP</span>
+        </button>
+        <button class="nav-item" data-tab="register">
+          <i data-lucide="user-plus"></i>
+          <span>Cadastrar Rostos</span>
+        </button>
+        <button class="nav-item" data-tab="people">
+          <i data-lucide="users"></i>
+          <span>Gerenciar Pessoas</span>
+          <span class="badge-count" id="nav-people-count">0</span>
+        </button>
+        <button class="nav-item" data-tab="analytics">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Analytics & IA</span>
+        </button>
+        <button class="nav-item" data-tab="logs">
+          <i data-lucide="file-text"></i>
+          <span>Logs de Detecção</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <i data-lucide="settings"></i>
+          <span>Configurações</span>
+        </button>
+        <button class="nav-item" data-tab="events-tab">
+          <i data-lucide="calendar-check"></i>
+          <span>Eventos & Presença</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-card">
+          <div class="status-indicator">
+            <span class="pulse-dot"></span>
+            <span id="sidebar-camera-status">Sistema Ativo</span>
+          </div>
+          <div class="status-metrics">
+            <span id="sidebar-fps">0.0 FPS</span>
+            <span id="sidebar-active-count">0 Ativos</span>
+          </div>
+          <div class="db-badge" id="sidebar-db-badge">
+            <i data-lucide="database"></i>
+            <span id="sidebar-db-text">PostgreSQL / SQLite</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 id="page-title">Monitoramento ao Vivo</h1>
+          <p id="page-desc">Transmissão em tempo real com InsightFace (ArcFace 512-d) e análise de IA</p>
+        </div>
+        <div class="header-right">
+          <div class="header-clock" id="header-clock">--:--:--</div>
+          <div class="quick-stat-badge">
+            <i data-lucide="user-check"></i>
+            <span id="header-active-badge">0 presentes agora</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btn-audio-toggle" onclick="toggleAudioAlerts()" title="Ativar/Desativar Alertas Sonoros">
+            <i data-lucide="volume-2" id="audio-toggle-icon"></i>
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-quick-register" onclick="switchTab('register')">
+            <i data-lucide="plus"></i>
+            <span>Novo Cadastro</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: LIVE MONITORING -->
+      <section id="tab-live" class="tab-pane active">
+        <div class="live-grid">
+          <!-- Video Stream Card -->
+          <div class="card video-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="video"></i>
+                <span>Transmissão da Câmera</span>
+              </div>
+              <div class="stream-controls">
+                <div class="source-toggle">
+                  <button class="toggle-btn active" id="btn-source-server" onclick="setVideoSource('server')">
+                    <i data-lucide="server"></i> Câmera do Sistema
+                  </button>
+                  <button class="toggle-btn" id="btn-source-browser" onclick="setVideoSource('browser')">
+                    <i data-lucide="camera"></i> Webcam do Navegador
+                  </button>
+                </div>
+                <button class="btn-icon" title="Recarregar Transmissão" onclick="reloadStream()">
+                  <i data-lucide="rotate-cw"></i>
+                </button>
+                <button class="btn-icon" title="Tela Cheia" onclick="toggleFullscreen()">
+                  <i data-lucide="maximize"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="video-container" id="video-container">
+              <!-- Server Stream Image -->
+              <img id="server-stream" src="/api/video_feed" alt="Transmissão ao vivo" />
+              
+              <!-- Browser Client Camera elements -->
+              <video id="browser-video" autoplay playsinline muted style="display: none;"></video>
+              <canvas id="browser-canvas" style="display: none;"></canvas>
+              <img id="browser-annotated" style="display: none;" alt="Processamento local" />
+
+              <!-- Overlay HUD -->
+              <div class="video-hud-overlay">
+                <div class="hud-top">
+                  <span class="hud-badge live"><span class="pulse-dot"></span> AO VIVO</span>
+                  <span class="hud-badge info" id="hud-fps-badge">FPS: --</span>
+                </div>
+                <div class="hud-bottom">
+                  <div class="hud-info-chip">
+                    <i data-lucide="shield-check"></i>
+                    <span id="hud-status-text">InsightFace Ativo</span>
+                  </div>
+                  <button class="btn btn-glass btn-sm" onclick="quickSnapshotFromStream()">
+                    <i data-lucide="camera"></i> Capturar para Cadastro
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Presence & Active Visitors Strip -->
+            <div class="presence-strip">
+              <div class="strip-header">
+                <span><i data-lucide="activity"></i> Pessoas no Ambiente Agora</span>
+                <span class="badge" id="active-strip-count">0</span>
+              </div>
+              <div class="active-chips" id="active-chips-container">
+                <div class="empty-state-sm">Nenhuma pessoa presente no momento</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Insights & Live Activity Feed -->
+          <div class="card insights-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="bot"></i>
+                <span>Insights da IA em Tempo Real</span>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="fetchInsights()">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+            </div>
+
+            <div class="insights-container" id="insights-feed">
+              <div class="insight-empty">
+                <i data-lucide="sparkles"></i>
+                <p>Aguardando detecções para gerar análises comportamentais com IA...</p>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="btn btn-secondary btn-block" onclick="generateAiSummaryModal()">
+                <i data-lucide="file-text"></i>
+                <span>Gerar Resumo Geral com IA</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: YOUTUBE VIDEO PROCESSING -->
+      <section id="tab-youtube" class="tab-pane">
+        <div class="split-layout">
+          <!-- Controls Column -->
+          <div class="card youtube-controls-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="youtube"></i>
+                <span>Análise de Vídeo do YouTube</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="yt-url-input">URL do Vídeo</label>
+              <input type="text" id="yt-url-input" class="form-control" placeholder="https://www.youtube.com/watch?v=... ou shorts/..." />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="yt-interval">Intervalo de Amostragem (segundos)</label>
+                <div class="range-wrapper">
+                  <input type="range" id="yt-interval" min="0.2" max="5.0" step="0.2" value="1.0" oninput="document.getElementById('yt-interval-val').innerText = this.value + 's'">
+                  <span class="range-value" id="yt-interval-val">1.0s</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="yt-min-score">Confiança Mínima de Detecção</label>
+                <div class="range-wrapper">
+                  <input type="range" id="yt-min-score" min="0.2" max="0.9" step="0.05" value="0.40" oninput="document.getElementById('yt-score-val').innerText = this.value">
+                  <span class="range-value" id="yt-score-val">0.40</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn btn-primary btn-block" id="btn-start-yt" onclick="startYoutubAnalysis()">
+                <i data-lucide="play"></i>
+                <span>Iniciar Análise Facial</span>
+              </button>
+              <button class="btn btn-danger btn-block" id="btn-stop-yt" onclick="stopYoutubeAnalysis()" style="display: none;">
+                <i data-lucide="square"></i>
+                <span>Cancelar Processamento</span>
+              </button>
+            </div>
+
+            <!-- YouTube Preview Player -->
+            <div class="yt-player-preview" id="yt-player-preview" style="display: none;">
+              <iframe id="yt-iframe" src="" allowfullscreen></iframe>
+            </div>
+
+            <div class="status-box" id="yt-status-box" style="display: none;">
+              <div class="status-title" id="yt-status-title">Status: Baixando...</div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="yt-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="progress-text" id="yt-progress-text">0% concluído</div>
+            </div>
+          </div>
+
+          <!-- Feed / Detected Faces Results Column -->
+          <div class="card youtube-results-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="scan"></i>
+                <span>Rostos Identificados no Vídeo</span>
+              </div>
+              <span class="badge" id="yt-detected-badge">0 Detectados</span>
+            </div>
+
+            <div class="yt-faces-grid" id="yt-faces-grid">
+              <div class="empty-state">
+                <i data-lucide="user-check"></i>
+                <p>Nenhum vídeo processado ainda. Insira a URL e clique em "Iniciar Análise Facial".</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: RTSP STREAMS -->
+      <section id="tab-rtsp" class="tab-pane">
+        <div class="split-layout">
+          <!-- Add Stream Form -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="plus-circle"></i>
+                <span>Adicionar Câmera RTSP / IP</span>
+              </div>
+            </div>
+
+            <form id="form-add-rtsp" onsubmit="handleAddRTSP(event)">
+              <div class="form-group">
+                <label class="form-label" for="rtsp-name">Nome da Câmera / Local</label>
+                <input type="text" id="rtsp-name" class="form-control" placeholder="Ex: Entrada Principal, Recepção, Portaria" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="rtsp-url">URL do Fluxo RTSP</label>
+                <input type="text" id="rtsp-url" class="form-control" placeholder="rtsp://usuario:senha@192.168.1.100:554/h264Preview_01_main" required />
+                <span class="form-hint">Compatível com Hikvision, Intelbras, Dahua, Vivotek, ONVIF e streams RTSP genéricos.</span>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">
+                <i data-lucide="save"></i>
+                <span>Salvar Câmera</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Streams List -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="list-video"></i>
+                <span>Câmeras Configuradas</span>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="loadRTSPStreams()">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+            </div>
+
+            <div class="rtsp-list" id="rtsp-streams-list">
+              <div class="empty-state">
+                <i data-lucide="cctv"></i>
+                <p>Nenhuma câmera RTSP cadastrada ainda.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: REGISTER FACES -->
+      <section id="tab-register" class="tab-pane">
+        <div class="register-grid">
+          <!-- Camera Capture Card -->
+          <div class="card capture-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="camera"></i>
+                <span>Captura da Câmera</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="captureSnapshotForRegister()">
+                <i data-lucide="aperture"></i> Capturar Frame
+              </button>
+            </div>
+
+            <div class="capture-preview-box">
+              <img id="register-preview-img" src="" alt="Prévia da captura" style="display: none;" />
+              <div class="capture-placeholder" id="register-placeholder">
+                <i data-lucide="image"></i>
+                <p>Nenhum frame capturado</p>
+                <span>Clique em "Capturar Frame" ou faça upload de uma foto abaixo</span>
+              </div>
+            </div>
+
+            <div class="upload-zone" onclick="document.getElementById('register-file-input').click()">
+              <input type="file" id="register-file-input" accept="image/*" style="display: none;" onchange="handleRegisterFileUpload(event)" />
+              <i data-lucide="upload-cloud"></i>
+              <span>Clique ou arraste uma foto aqui para cadastrar</span>
+            </div>
+          </div>
+
+          <!-- Form Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="user-check"></i>
+                <span>Dados do Perfil</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="register-name">Nome Completo</label>
+              <input type="text" id="register-name" class="form-control" placeholder="Ex: João da Silva" />
+            </div>
+
+            <div class="alert-box info">
+              <i data-lucide="info"></i>
+              <div>
+                <strong>Cadastro Automático Inteligente:</strong>
+                <p>Pessoas desconhecidas que circularem no ambiente serão registradas automaticamente após confirmação em múltiplos avistamentos — cada pessoa é cadastrada apenas uma vez. Use esta tela para cadastros manuais já nomeados.</p>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" id="btn-save-register" onclick="submitRegisterFace()">
+              <i data-lucide="check"></i>
+              <span>Concluir Cadastro</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: MANAGE PEOPLE -->
+      <section id="tab-people" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="users"></i>
+              <span>Pessoas Cadastradas</span>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="openMergeModal()">
+                <i data-lucide="git-merge"></i> Mesclar Pessoas
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="exportPresenceCSV()" title="Exportar Presenças Ativas em CSV">
+                <i data-lucide="download"></i> Presenças (CSV)
+              </button>
+              <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="people-search-input" placeholder="Buscar por nome..." oninput="filterPeopleList(this.value)" />
+              </div>
+            </div>
+          </div>
+
+          <div class="people-grid" id="people-cards-grid">
+            <div class="empty-state">
+              <i data-lucide="users"></i>
+              <p>Carregando pessoas cadastradas...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: ANALYTICS & IA -->
+      <section id="tab-analytics" class="tab-pane">
+        <div class="analytics-layout">
+          <!-- Stats KPI Row -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon cyan"><i data-lucide="users"></i></div>
+              <div class="kpi-body">
+                <span class="kpi-label">Pessoas Cadastradas</span>
+                <span class="kpi-value" id="kpi-total-registered">0</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon green"><i data-lucide="user-check"></i></div>
+              <div class="kpi-body">
+                <span class="kpi-label">Detecções Hoje</span>
+                <span class="kpi-value" id="kpi-registered-today">0</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon red"><i data-lucide="user-x"></i></div>
+              <div class="kpi-body">
+                <span class="kpi-label">Novos Registros Hoje</span>
+                <span class="kpi-value" id="kpi-unknown-today">0</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon violet"><i data-lucide="clock"></i></div>
+              <div class="kpi-body">
+                <span class="kpi-label">Permanência Média</span>
+                <span class="kpi-value" id="kpi-avg-stay">0 min</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hourly Timeline Chart Card -->
+          <div class="card timeline-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="trending-up"></i>
+                <span>Fluxo de Detecções & Visitas (Últimas 24 Horas)</span>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="loadAnalyticsTimeline()">
+                <i data-lucide="refresh-cw"></i> Atualizar Gráfico
+              </button>
+            </div>
+            <div class="chart-container" style="padding: 1.25rem 1rem 0.5rem 1rem;">
+              <canvas id="hourly-traffic-chart" style="width: 100%; height: 160px; max-height: 180px;"></canvas>
+            </div>
+          </div>
+
+          <!-- AI Executive Report Card -->
+          <div class="card ai-report-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="sparkles"></i>
+                <span>Relatório Inteligente da IA (GPT-4o-mini)</span>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="generateAiSummary()">
+                <i data-lucide="refresh-cw"></i> Gerar Novo Resumo
+              </button>
+            </div>
+            <div class="ai-summary-content" id="ai-summary-text">
+              <p class="text-muted">Clique em "Gerar Novo Resumo" para que o Agente de IA analise todos os registros, presenças e padrões comportamentais.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: DETECTION LOGS -->
+      <section id="tab-logs" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="file-text"></i>
+              <span>Histórico de Detecções & Verificações</span>
+            </div>
+            <div class="log-controls">
+              <select id="log-filter-status" class="form-control-sm" onchange="filterLogsTable()">
+                <option value="ALL">Todos os Eventos</option>
+                <option value="known">Reconhecidos</option>
+                <option value="registered">Novos Registros</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" onclick="exportLogsCSV()" title="Baixar relatório completo em CSV">
+                <i data-lucide="download"></i> Exportar CSV
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="loadLogsTable()">
+                <i data-lucide="refresh-cw"></i> Atualizar
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table" id="logs-table">
+              <thead>
+                <tr>
+                  <th>Data e Hora</th>
+                  <th>Foto</th>
+                  <th>Pessoa</th>
+                  <th>Evento</th>
+                  <th>Origem · Confiança</th>
+                </tr>
+              </thead>
+              <tbody id="logs-tbody">
+                <tr><td colspan="5" class="text-center">Carregando logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 9: EVENTS & PRESENCE -->
+      <section id="tab-events-tab" class="tab-pane">
+        <div class="split-layout">
+          <!-- Create Event Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="calendar-plus"></i>
+                <span>Criar Evento</span>
+              </div>
+            </div>
+
+            <form id="form-create-event" onsubmit="handleCreateEvent(event)">
+              <div class="form-group">
+                <label class="form-label" for="event-name">Nome do Evento</label>
+                <input type="text" id="event-name" class="form-control" placeholder="Ex: Reunião 26/08, Evento de Portas Abertas" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="event-duration">Duração da Verificação (minutos)</label>
+                <div class="range-wrapper">
+                  <input type="range" id="event-duration" min="5" max="480" step="5" value="60" oninput="document.getElementById('event-duration-val').innerText = this.value + ' min'">
+                  <span class="range-value" id="event-duration-val">60 min</span>
+                </div>
+                <span class="form-hint">Deixe vazio para evento sem fim; clique em "Encerrar Evento" para finalizar manualmente.</span>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">
+                <i data-lucide="play"></i>
+                <span>Iniciar Evento</span>
+              </button>
+            </form>
+
+            <!-- Active Event Status -->
+            <div class="card" style="margin-top: 1rem;">
+              <div class="card-header">
+                <div class="card-title">
+                  <i data-lucide="activity"></i>
+                  <span>Evento Ativo</span>
+                </div>
+                <button class="btn btn-danger btn-sm" id="btn-end-event" onclick="endActiveEvent()" style="display: none;">
+                  <i data-lucide="square"></i> Encerrar Evento
+                </button>
+              </div>
+              <div class="status-box" id="active-event-box">
+                <div class="status-title" id="active-event-name">Nenhum evento ativo</div>
+                <div class="status-meta" id="active-event-meta"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Presence List Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="list-checks"></i>
+                <span>Lista de Presença</span>
+                <span class="presence-subtitle" id="presence-subtitle"></span>
+              </div>
+              <div class="header-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-export-event" onclick="exportCurrentEventCSV()" title="Exportar presenças do evento selecionado em CSV">
+                  <i data-lucide="download"></i> Exportar (CSV)
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="loadEventPresence()">
+                  <i data-lucide="refresh-cw"></i> Atualizar
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table" id="presence-table">
+                <thead>
+                  <tr>
+                    <th style="width: 64px;">Foto</th>
+                    <th>Pessoa</th>
+                    <th>Primeira Aparição</th>
+                  </tr>
+                </thead>
+                <tbody id="presence-tbody">
+                  <tr><td colspan="3" class="text-center text-muted">Selecione um evento para ver a presença.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Past Events -->
+            <div class="card-header" style="margin-top: 1.5rem;">
+              <div class="card-title">
+                <i data-lucide="history"></i>
+                <span>Eventos Anteriores</span>
+              </div>
+            </div>
+            <div class="events-list" id="past-events-list">
+              <div class="empty-state-sm">Nenhum evento anterior.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: SETTINGS -->
+      <section id="tab-settings" class="tab-pane">
+        <div class="split-layout">
+          <!-- Runtime & DL Settings -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="sliders"></i>
+                <span>Parâmetros do Reconhecimento (InsightFace)</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-threshold">Limite de Distância Cosseno (Threshold)</label>
+              <div class="range-wrapper">
+                <input type="range" id="setting-threshold" min="0.2" max="0.75" step="0.01" value="0.45" oninput="document.getElementById('threshold-val').innerText = this.value">
+                <span class="range-value" id="threshold-val">0.45</span>
+              </div>
+              <span class="form-hint">Recomendado: 0.42 a 0.48 (~55% similaridade). Valores menores evitam falsos positivos ao cobrir a boca ou parte do rosto.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Registro Automático de Desconhecidos</label>
+              <label class="form-label">
+                <input type="checkbox" id="setting-auto-register" checked />
+                Cadastrar automaticamente pessoas novas no banco
+              </label>
+              <span class="form-hint">Uma pessoa só é cadastrada após ser confirmada no número de avistamentos abaixo.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-min-sightings">Confirmações Necessárias para Registrar</label>
+              <input type="number" id="setting-min-sightings" class="form-control" value="2" min="1" max="10" />
+              <span class="form-hint">Quantas vezes a mesma pessoa desconhecida precisa aparecer antes do cadastro automático.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-cooldown">Tempo de Cooldown / Deduplicação (minutos)</label>
+              <input type="number" id="setting-cooldown" class="form-control" value="60" min="0" max="10080" />
+              <span class="form-hint">Evita registrar múltiplos logs da mesma pessoa enquanto ela permanece no ambiente.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-presence-timeout">Timeout de Presença (segundos)</label>
+              <input type="number" id="setting-presence-timeout" class="form-control" value="30" min="5" max="3600" />
+              <span class="form-hint">Segundos sem detecção antes de considerar que a pessoa saiu do ambiente.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-retention">Retenção de Imagens (horas)</label>
+              <input type="number" id="setting-retention" class="form-control" value="48" min="1" max="8760" />
+              <span class="form-hint">Imagens de frames com mais que esse tempo serão expurgadas automaticamente.</span>
+            </div>
+
+            <!-- Webhook & Alerts -->
+            <div class="form-group">
+              <label class="form-label" for="setting-webhook-url">URL de Webhook (Notificações em Tempo Real)</label>
+              <input type="url" id="setting-webhook-url" class="form-control" placeholder="https://exemplo.com/webhook/faceshield" />
+              <span class="form-hint">Envia payloads JSON POST a cada novo registro ou evento de presença detectado.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <input type="checkbox" id="setting-audio-alerts" checked /> Alertas sonoros ativos no navegador
+              </label>
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="saveRuntimeSettings()">
+              <i data-lucide="save"></i>
+              <span>Salvar Parâmetros</span>
+            </button>
+          </div>
+
+          <!-- Hardware & Camera Settings -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="camera"></i>
+                <span>Câmera & Dispositivos</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-camera-index">Índice da Webcam Local</label>
+              <select id="setting-camera-index" class="form-control">
+                <option value="0">Câmera 0 (Padrão)</option>
+                <option value="1">Câmera 1 (Externa / USB)</option>
+                <option value="2">Câmera 2</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <input type="checkbox" id="setting-use-a9" /> Usar Câmera Wi-Fi A9 Mini
+              </label>
+              <span class="form-hint">Conecta diretamente ao IP da câmera A9 (192.168.169.1).</span>
+            </div>
+
+            <button class="btn btn-secondary btn-block" onclick="saveCameraSettings()">
+              <i data-lucide="refresh-cw"></i>
+              <span>Aplicar Configuração de Câmera</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  <!-- Person Logs Modal -->
+  <div class="modal-backdrop" id="person-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-person-name">Histórico da Pessoa</h3>
+        <button class="btn-icon" onclick="closePersonModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="modal-person-logs-list">
+        Carregando histórico...
+      </div>
+    </div>
+  </div>
+
+  <!-- Merge Persons Modal -->
+  <div class="modal-backdrop" id="merge-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Mesclar Perfis de Pessoas</h3>
+        <button class="btn-icon" onclick="closeMergeModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="margin-bottom: 1rem;">
+          Junte dois perfis cadastrados para a mesma pessoa física. Todos os logs de detecção e presenças serão unificados no perfil de destino, recalculando o embedding facial.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="merge-source-select">Perfil a ser Mesclado e Removido (Origem)</label>
+          <select id="merge-source-select" class="form-control"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="merge-target-select">Perfil Principal Definitivo (Destino)</label>
+          <select id="merge-target-select" class="form-control"></select>
+        </div>
+
+        <div class="alert-box warning" style="margin-top: 1rem;">
+          <i data-lucide="alert-triangle"></i>
+          <div>
+            <strong>Atenção:</strong> Esta ação é irreversível. A foto e o cadastro de origem serão apagados após a transferência de todo o histórico.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button class="btn btn-ghost" onclick="closeMergeModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="executeMergePersons()">
+            <i data-lucide="git-merge"></i> Confirmar Mesclagem
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main Application Script -->
+  <script src="/static/app.js"></script>
+</body>
+</html>

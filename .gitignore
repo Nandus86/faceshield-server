@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+data/faces/*.jpg
+data/faces/*.png
+data/encodings/*.pkl
+data/encodings/*.json
+data/sessions/*.json
+data/analytics/*.json
+data/logs/*.txt
+
+# Keep directory structure
+!data/faces/.gitkeep
+!data/encodings/.gitkeep
+!data/sessions/.gitkeep
+!data/analytics/.gitkeep
+!data/logs/.gitkeep
+
+# Databases & local caches
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+data/*.sqlite
+.pytest_cache/
+.kilo/
+.playwright-mcp/
+
+# Separate Edge Client repository
+pi_client/
+

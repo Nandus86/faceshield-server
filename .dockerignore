@@ -1,0 +1,36 @@
+# Version control
+.git
+.gitignore
+
+# Environment & secrets
+.env
+*.env
+
+# Runtime data (mounted as volume instead)
+data/
+
+# Model cache (volume)
+.insightface/
+~.insightface
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Archived legacy code (not part of the Docker image)
+legacy/
+
+# Tests and tooling
+tests/
+.pytest_cache
+
+# Docs and IDE
+*.md
+.vscode/
+.idea/
+.kilo/
